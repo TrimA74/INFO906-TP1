@@ -43,6 +43,41 @@ public class OperationBean implements Operation {
 	private EntityManager em;
 ```
 
+Pour les opérations de recherche de comptes, sur l'entité JPA ont été ajoutés deux requetes nommées
+
+```java
+@NamedQueries ({
+	@NamedQuery(name="all", query="SELECT c FROM Compte c"),
+	@NamedQuery(name="findWithNum", query="SELECT c FROM Compte c WHERE c.numero LIKE :partialNum ORDER BY c.numero ASC")
+})
+@Entity
+public class Compte implements Serializable {
+	...
+```
+
+utilisées dans l'EJB session pour obtenir soit la liste complete des comptes, soit une partie d'entre eux :
+
+```
+@Stateless
+@Remote
+public class OperationBean implements Operation {	
+	...	
+	@Override
+	public List<Compte> findAllComptes() {
+		Query req = em.createNamedQuery("all");
+		return req.getResultList();
+	}
+
+	@Override
+	public List<Compte> findComptes(String partialNumber) {
+		Query req = em.createNamedQuery("findWithNum");
+		req.setParameter("partialNum", partialNumber);
+		return req.getResultList();
+	}	
+	...
+```
+
+ 
 ## L'application WEB est dans un fichier d'archive war :
 
 Ce client WEB permet de réaliser l'ensemble des opérations sur les comptes : création, débit, crédit, transfert, recherche ou visualisation.
@@ -60,8 +95,8 @@ CompteWeb.war
                 |-- <a href="CompteWeb/src/main/java/fr/usmb/m2isc/javaee/comptes/web/CrediterCompteServlet.java" >fr/usmb/m2isc/javaee/comptes/web/CrediterCompteServlet.class</a>
                 |-- <a href="CompteWeb/src/main/java/fr/usmb/m2isc/javaee/comptes/web/DebiterCompteServlet.java" >fr/usmb/m2isc/javaee/comptes/web/DebiterCompteServlet.class</a>
                 |-- <a href="CompteWeb/src/main/java/fr/usmb/m2isc/javaee/comptes/web/TransfererServlet.java" >fr/usmb/m2isc/javaee/comptes/web/TransfererServlet.class</a>
-                |-- <a href="CompteWeb/src/main/java/fr/usmb/m2isc/javaee/comptes/web/ChercherComptesServlet.java" >fr/usmb/m2isc/javaee/comptes/web/ChercherComptesServlet.java.class</a>
-                |-- <a href="CompteWeb/src/main/java/fr/usmb/m2isc/javaee/comptes/web/AfficherCompteServlet.java" >fr/usmb/m2isc/javaee/comptes/web/AfficherCompteServlet.java.class</a>
+                |-- <a href="CompteWeb/src/main/java/fr/usmb/m2isc/javaee/comptes/web/ChercherComptesServlet.java" >fr/usmb/m2isc/javaee/comptes/web/ChercherComptesServlet.class</a>
+                |-- <a href="CompteWeb/src/main/java/fr/usmb/m2isc/javaee/comptes/web/AfficherCompteServlet.java" >fr/usmb/m2isc/javaee/comptes/web/AfficherCompteServlet.class</a>
   |-- WEB-INF/lib (librairies java utilisées dans les servlet)
   |-- <a href="CompteWeb/src/main/webapp/WEB-INF/web.xml" >WEB-INF/web.xml</a> (descripteur standard de l'application Web -- optionnel dans les dernières versions de javaEE)
 </pre>
